@@ -4,6 +4,9 @@ import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 
 image = mpimg.imread('bbox-example-image.jpg')
+#image = mpimg.imread('temp-matching-example-2.jpg')
+templist = ['cutout1.jpg', 'cutout2.jpg', 'cutout3.jpg',
+            'cutout4.jpg', 'cutout5.jpg', 'cutout6.jpg']
 
 # Define a function that takes an image, a list of bounding boxes,
 # and optional color tuple and line thickness as inputs
@@ -30,8 +33,31 @@ def draw_boxes(image, bboxes, color=(0, 0, 255), thick=6):
     # return the image copy with boxes drawn
     return draw_img # Change this line to return image copy with boxes
 
-# Add bounding boxes in this format, these are just example coordinates.
-bboxes = [((100, 100), (200, 200)), ((300, 300), (400, 400))]
 
+# Define a function that takes an image and a list of templates as inputs
+# then searches the image and returns the a list of bounding boxes
+# for matched templates
+def find_matches(img, template_list):
+    # Make a copy of the image to draw on
+    imcopy = np.copy(img)
+    # Define an empty list to take bbox coords
+    bbox_list = []
+    # Iterate through template list
+    for template in template_list:
+        # Read in templates one by one
+        temp_img = mpimg.imread(template)
+        temp_h, temp_w, _ = temp_img.shape
+        # Use cv2.matchTemplate() to search the image
+        #     using whichever of the OpenCV search methods you prefer
+        result = cv2.matchTemplate(imcopy, temp_img, cv2.TM_SQDIFF_NORMED)
+        # Use cv2.minMaxLoc() to extract the location of the best match
+        _, _, min, _ = cv2.minMaxLoc(result)
+        max = (min[0] + temp_w, min[1] + temp_h)
+        # Determine bounding box corners for the match
+        bbox_list.append((min, max))
+    # Return the list of bounding boxes
+    return bbox_list
+
+bboxes = find_matches(image, templist)
 result = draw_boxes(image, bboxes)
 plt.imshow(result)
