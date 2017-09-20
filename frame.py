@@ -79,7 +79,7 @@ def color_hist(img, nbins=32, bins_range=(0, 256)):
 #                                             bins_range=(0, 256))
 
 # Plot a figure with all three bar charts
-if rh is not None:
+'''if rh is not None:
     fig = plt.figure(figsize=(12, 3))
     plt.subplot(131)
     plt.bar(bincen, rh[0])
@@ -95,7 +95,7 @@ if rh is not None:
     plt.title('B Histogram')
     fig.tight_layout()
 else:
-    print('Your function is returning None for at least one variable...')
+    print('Your function is returning None for at least one variable...')'''
 
 #bboxes = find_matches(image, templist)
 #result = draw_boxes(image, bboxes)
@@ -132,20 +132,23 @@ def plot3d(pixels, colors_rgb,
 
 
 # Read a color image
-img = cv2.imread("000275.png")
+imgs = ['2.png', '3.png', '8.png', '25.png', '31.png', '53.png', '000275.png',
+        '000528.png', '001240.png']
+for image in imgs:
+    img = cv2.imread(image)
 
-# Select a small fraction of pixels to plot by subsampling it
-scale = max(img.shape[0], img.shape[1], 64) / 64  # at most 64 rows and columns
-img_small = cv2.resize(img, (np.int(img.shape[1] / scale), np.int(img.shape[0] / scale)), interpolation=cv2.INTER_NEAREST)
+    # Select a small fraction of pixels to plot by subsampling it
+    scale = max(img.shape[0], img.shape[1], 64) / 64  # at most 64 rows and columns
+    img_small = cv2.resize(img, (np.int(img.shape[1] / scale), np.int(img.shape[0] / scale)), interpolation=cv2.INTER_NEAREST)
 
-# Convert subsampled image to desired color space(s)
-img_small_RGB = cv2.cvtColor(img_small, cv2.COLOR_BGR2RGB)  # OpenCV uses BGR, matplotlib likes RGB
-img_small_HSV = cv2.cvtColor(img_small, cv2.COLOR_BGR2HSV)
-img_small_rgb = img_small_RGB / 255.  # scaled to [0, 1], only for plotting
+    # Convert subsampled image to desired color space(s)
+    img_small_RGB = cv2.cvtColor(img_small, cv2.COLOR_BGR2RGB)  # OpenCV uses BGR, matplotlib likes RGB
+    img_small_HSV = cv2.cvtColor(img_small, cv2.COLOR_BGR2HSV)
+    img_small_rgb = img_small_RGB / 255.  # scaled to [0, 1], only for plotting
 
-# Plot and show
-plot3d(img_small_RGB, img_small_rgb)
-plt.show()
+    # Plot and show
+    plot3d(img_small_RGB, img_small_rgb)
+    plt.show()
 
-plot3d(img_small_HSV, img_small_rgb, axis_labels=list("HSV"))
-plt.show()
+    plot3d(img_small_HSV, img_small_rgb, axis_labels=list("HSV"))
+    plt.show()
