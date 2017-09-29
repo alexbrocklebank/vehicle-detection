@@ -1,6 +1,30 @@
+import matplotlib.image as mpimg
+import matplotlib.pyplot as plt
 import numpy as np
+import csv
+import os
+import pickle
 import cv2
 from skimage.feature import hog
+
+
+data_dir = os.path.join(os.path.curdir, 'data')
+csv_file = os.path.join(data_dir, 'object-detection-crowdai', 'labels.csv')
+nv_dirs = [os.path.join(data_dir, 'non-vehicles', 'Extras'),
+           os.path.join(data_dir, 'non-vehicles', 'GTI')]
+v_dirs = [os.path.join(data_dir, 'vehicles', 'GTI_Far'),
+          os.path.join(data_dir, 'vehicles', 'GTI_Left'),
+          os.path.join(data_dir, 'vehicles', 'GTI_MiddleClose'),
+          os.path.join(data_dir, 'vehicles', 'GTI_Right'),
+          os.path.join(data_dir, 'vehicles', 'KITTI_extracted')]
+
+
+def load_data():
+    with open(csv_file, newline='') as cf:
+        reader = csv.reader(cf, delimiter=',')
+        for row in reader:
+            print(row)
+            # TODO: Parse the data
 
 
 def convert_color(img, conv='RGB2YCrCb'):
