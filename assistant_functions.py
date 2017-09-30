@@ -192,9 +192,45 @@ def slide_window(img, x_start_stop=[None, None], y_start_stop=[None, None],
     return window_list
 
 
+# Define a function you will pass an image
+# and the list of windows to be searched (output of slide_windows())
+def search_windows(img, windows, clf, scaler, color_space='RGB',
+                    spatial_size=(32, 32), hist_bins=32,
+                    hist_range=(0, 256), orient=9,
+                    pix_per_cell=8, cell_per_block=2,
+                    hog_channel=0, spatial_feat=True,
+                    hist_feat=True, hog_feat=True):
+
+    #1) Create an empty list to receive positive detection windows
+    on_windows = []
+    #2) Iterate over all windows in the list
+    for window in windows:
+        #3) Extract the test window from original image
+        test_img = cv2.resize(img[window[0][1]:window[1][1], window[0][0]:window[1][0]], (64, 64))
+        #4) Extract features for that window using single_img_features()
+        features = single_img_features(test_img, color_space=color_space,
+                            spatial_size=spatial_size, hist_bins=hist_bins,
+                            orient=orient, pix_per_cell=pix_per_cell,
+                            cell_per_block=cell_per_block,
+                            hog_channel=hog_channel, spatial_feat=spatial_feat,
+                            hist_feat=hist_feat, hog_feat=hog_feat)
+        #5) Scale extracted features to be fed to classifier
+        test_features = scaler.transform(np.array(features).reshape(1, -1))
+        #6) Predict using your classifier
+        prediction = clf.predict(test_features)
+        #7) If positive (prediction == 1) then save the window
+        if prediction == 1:
+            on_windows.append(window)
+    #8) Return windows for positive detections
+    return on_windows
+
+
 def find_cars(img, ystart, ystop, scale, svc, X_scaler, orient, pix_per_cell,
               cell_per_block, spatial_size, hist_bins):
     draw_img = np.copy(img)
+    # Uncomment the following line if you extracted training
+    # data from .png images (scaled 0 to 1 by mpimg) and the
+    # image you are searching is a .jpg (scaled 0 to 255)
     img = img.astype(np.float32) / 255
 
     img_tosearch = img[ystart:ystop, :, :]
@@ -214,6 +250,9 @@ def find_cars(img, ystart, ystop, scale, svc, X_scaler, orient, pix_per_cell,
     nfeat_per_block = orient * cell_per_block ** 2
 
     # 64 was the orginal sampling rate, with 8 cells and 8 pix per cell
+    # TODO: Multiple Window sizes and different areas of image
+    # Probably 32x32, 64x64, 96x96, 128x128, 200x200 with each
+    #  starting at a different y-axis positional horizon.
     window = 64
     nblocks_per_window = (window // pix_per_cell) - cell_per_block + 1
     cells_per_step = 2  # Instead of overlap, define how many cells to step
@@ -264,9 +303,9 @@ def find_cars(img, ystart, ystop, scale, svc, X_scaler, orient, pix_per_cell,
                 xbox_left = np.int(xleft * scale)
                 ytop_draw = np.int(ytop * scale)
                 win_draw = np.int(window * scale)
-                bboxes.append((xbox_left, ytop_draw + ystart),
+                bboxes.append(((xbox_left, ytop_draw + ystart),
                               (xbox_left + win_draw,
-                               ytop_draw + win_draw + ystart))
+                               ytop_draw + win_draw + ystart)))
 
     return draw_img, bboxes
 

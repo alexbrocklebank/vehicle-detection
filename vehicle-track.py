@@ -154,29 +154,34 @@ def process_image(image):
     ystart = 400
     ystop = 656
     scale = 1.5
+    heatmap_threshold = 3
     heat = np.zeros_like(image[:, :, 0]).astype(np.float)
+
+    # Find Vehicles
+    # TODO: Variable window sizes
     out_img, bboxes = find_cars(image, ystart, ystop, scale, svc, X_scaler,
                                 orient, pix_per_cell, cell_per_block,
                                 spatial_size, hist_bins)
-    heat = apply_threshold(add_heat(heat, bboxes), 2)
+
+    # Heatmap
+    heat = apply_threshold(add_heat(heat, bboxes), heatmap_threshold)
     heatmap = np.clip(heat, 0, 255)
     labels = label(heatmap)
-    draw_img = draw_labeled_bboxes(np.copy(image), labels)
+    # TODO: Centroid of Duplicates
+    draw_img = draw_labeled_bboxes(np.copy(out_img), labels)
+    # TODO: Record positions of found vehicles
+    fig = plt.figure()
+    plt.subplot(121)
+    plt.imshow(draw_img)
+    plt.title('Car Positions')
+    plt.subplot(122)
+    plt.imshow(heatmap, cmap='hot')
+    plt.title('Heat Map')
+    fig.tight_layout()
+    plt.show()
     return draw_img
 
 
 for img in test_images:
     image = mpimg.imread(img)
     out_img = process_image(image)
-    plt.imshow(out_img)
-    plt.show()
-
-
-# TODO: Sliding Window Function
-
-# TODO: Find Vehicles
-
-# TODO: Heatmap
-# TODO: Centroid of Duplicates
-
-# TODO: Record positions of found vehicles
