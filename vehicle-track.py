@@ -14,12 +14,17 @@ from sklearn.preprocessing import StandardScaler
 # from sklearn.cross_validation import train_test_split
 # if you are using scikit-learn >= 0.18 then use this:
 from sklearn.model_selection import train_test_split
+from scipy.ndimage.measurements import label
 from assistant_functions import *
 
 # Read in Vehicle and Not-Vehicle images
 cars, notcars = load_data()
-
-# TODO: Sliding Window Function
+test_images = ('test_images' + os.sep + 'test1.jpg',
+               'test_images' + os.sep + 'test2.jpg',
+               'test_images' + os.sep + 'test3.jpg',
+               'test_images' + os.sep + 'test4.jpg',
+               'test_images' + os.sep + 'test5.jpg',
+               'test_images' + os.sep + 'test6.jpg')
 
 # Classifier Parameters
 classifier_pickle = 'classifier.pkl'
@@ -97,6 +102,8 @@ y = []
 if not write_params:
     if im_a_pickle_morty("X_scaled.pkl"):
         scaled_X = joblib.load("X_scaled.pkl")
+        X_scaler = joblib.load("X_scaler.pkl")
+        X = joblib.load("X.pkl")
         print("Scaled X loaded from file.")
     if im_a_pickle_morty("y_labels.pkl"):
         y = joblib.load("y_labels.pkl")
@@ -108,6 +115,8 @@ if (len(scaled_X) == 0) or (len(y) == 0):
     # Apply the scaler to X
     scaled_X = X_scaler.transform(X)
     joblib.dump(scaled_X, "X_scaled.pkl")
+    joblib.dump(X_scaler, "X_scaler.pkl")
+    joblib.dump(X, "X.pkl")
     print("Scaled X written to file.")
     # Define the labels vector
     y = np.hstack((np.ones(len(car_features)), np.zeros(len(notcar_features))))
@@ -139,7 +148,31 @@ else:
     joblib.dump(svc, classifier_pickle)
     print("Classifier saved.")
 
+
 # TODO: Receive Frame
+def process_image(image):
+    ystart = 400
+    ystop = 656
+    scale = 1.5
+    heat = np.zeros_like(image[:, :, 0]).astype(np.float)
+    out_img, bboxes = find_cars(image, ystart, ystop, scale, svc, X_scaler,
+                                orient, pix_per_cell, cell_per_block,
+                                spatial_size, hist_bins)
+    heat = apply_threshold(add_heat(heat, bboxes), 2)
+    heatmap = np.clip(heat, 0, 255)
+    labels = label(heatmap)
+    draw_img = draw_labeled_bboxes(np.copy(image), labels)
+    return draw_img
+
+
+for img in test_images:
+    image = mpimg.imread(img)
+    out_img = process_image(image)
+    plt.imshow(out_img)
+    plt.show()
+
+
+# TODO: Sliding Window Function
 
 # TODO: Find Vehicles
 
