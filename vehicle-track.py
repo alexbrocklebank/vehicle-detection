@@ -3,13 +3,15 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pickle
 import cv2
+import time
+from skimage.feature import hog
 from sklearn.svm import LinearSVC
 from sklearn.preprocessing import StandardScaler
 # NOTE: the next import is only valid
 # for scikit-learn version <= 0.17
+# from sklearn.cross_validation import train_test_split
 # if you are using scikit-learn >= 0.18 then use this:
-# from sklearn.model_selection import train_test_split
-from sklearn.cross_validation import train_test_split
+from sklearn.model_selection import train_test_split
 from assistant_functions import *
 
 # Read in Vehicle and Not-Vehicle images
@@ -29,6 +31,8 @@ spatial_feat = True  # Spatial features on or off
 hist_feat = True  # Histogram features on or off
 hog_feat = True  # HOG features on or off
 y_start_stop = [450, None]  # Min and max in y to search in slide_window()
+# TODO: Store parameters to pickle
+# TODO: compare pickle to current params to determine re-run of classifier
 
 # Obtain Features
 car_features = extract_features(cars, color_space=color_space,
@@ -59,6 +63,7 @@ y = np.hstack((np.ones(len(car_features)), np.zeros(len(notcar_features))))
 rand_state = np.random.randint(0, 100)
 X_train, X_test, y_train, y_test = train_test_split(
     scaled_X, y, test_size=0.2, random_state=rand_state)
+# TODO: Pickle image data?
 
 # Create Classifier
 svc = LinearSVC()
@@ -73,6 +78,7 @@ print(round(t2-t, 2), 'Seconds to train SVC...')
 print('Test Accuracy of SVC = ', round(svc.score(X_test, y_test), 4))
 # Check the prediction time for a single sample
 t = time.time()
+# TODO: Can you pickle a classifier?
 
 # TODO: Receive Frame
 
