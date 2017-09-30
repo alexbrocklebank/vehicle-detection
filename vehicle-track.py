@@ -92,8 +92,8 @@ else:
     print("Notcar Features written to file.")
 
 # Normalize/Scale Features
-scaled_X = False
-y = False
+scaled_X = []
+y = []
 if not write_params:
     if im_a_pickle_morty("X_scaled.pkl"):
         scaled_X = joblib.load("X_scaled.pkl")
@@ -101,7 +101,7 @@ if not write_params:
     if im_a_pickle_morty("y_labels.pkl"):
         y = joblib.load("y_labels.pkl")
         print("Y Labels loaded from file.")
-if (not scaled_X) or (not y):
+if (len(scaled_X) == 0) or (len(y) == 0):
     X = np.vstack((car_features, notcar_features)).astype(np.float64)
     # Fit a per-column scaler
     X_scaler = StandardScaler().fit(X)
