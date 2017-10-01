@@ -261,8 +261,8 @@ def find_cars(img, ystart, ystop, scale, svc, X_scaler, orient, pix_per_cell,
             ctrans_tosearch = cv2.resize(ctrans_tosearch, (
                 np.int(imshape[1] / scale[i]), np.int(imshape[0] / scale[i])))
 
-        print("Image to Search Dimensions: {} at Scale {}.".format(
-            ctrans_tosearch.shape, scale[i]))
+        #print("Image to Search Dimensions: {} at Scale {}.".format(
+        #    ctrans_tosearch.shape, scale[i]))
 
         ch1 = ctrans_tosearch[:, :, 0]
         ch2 = ctrans_tosearch[:, :, 1]
@@ -273,19 +273,19 @@ def find_cars(img, ystart, ystop, scale, svc, X_scaler, orient, pix_per_cell,
         nyblocks = (ch1.shape[0] // pix_per_cell) - cell_per_block + 1
         nfeat_per_block = orient * cell_per_block ** 2
 
-        print("Image to Search Dimensions: {} at Scale {}.".format(
-            ctrans_tosearch.shape, scale[i]))
+        #print("Image to Search Dimensions: {} at Scale {}.".format(
+        #    ctrans_tosearch.shape, scale[i]))
 
         # 64 was the orginal sampling rate, with 8 cells and 8 pix per cell
         window = 64
         nblocks_per_window = (window // pix_per_cell) - cell_per_block + 1
-        cells_per_step = 2  # Instead of overlap, define how many cells to step
+        cells_per_step = 1  # Instead of overlap, define how many cells to step
         nxsteps = (nxblocks - nblocks_per_window) // cells_per_step
         nysteps = (nyblocks - nblocks_per_window) // cells_per_step
 
-        print("Blocks/win: {}, Cells/step: {}, X/Y Steps: {}/{}".format(
-            nblocks_per_window, cells_per_step, nxsteps, nysteps
-        ))
+        #print("Blocks/win: {}, Cells/step: {}, X/Y Steps: {}/{}".format(
+        #    nblocks_per_window, cells_per_step, nxsteps, nysteps
+        #))
 
         # Compute individual channel HOG features for the entire image
         hog1 = get_hog_features(ch1, orient, pix_per_cell, cell_per_block,
@@ -343,7 +343,10 @@ def add_heat(heatmap, bbox_list):
         # Add += 1 for all pixels inside each bbox
         # Assuming each "box" takes the form ((x1, y1), (x2, y2))
         heatmap[box[0][1]:box[1][1], box[0][0]:box[1][0]] += 1
-
+    for box in bbox_list:
+        # Add += 1 for all pixels inside each bbox
+        # Assuming each "box" takes the form ((x1, y1), (x2, y2))
+        heatmap[box[0][1]:box[1][1], box[0][0]:box[1][0]] = max(heatmap[box[0][1]:box[1][1], box[0][0]:box[1][0]])
     # Return updated heatmap
     return heatmap  # Iterate through list of bboxes
 
