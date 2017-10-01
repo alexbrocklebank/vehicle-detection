@@ -32,7 +32,7 @@ color_space = 'HLS'  # Can be RGB, HSV, LUV, HLS, YUV, YCrCb
 orient = 9  # HOG orientations
 pix_per_cell = 8  # HOG pixels per cell
 cell_per_block = 2  # HOG cells per block
-hog_channel = 'ALL'  # Can be 0, 1, 2, or "ALL"
+hog_channel = 'ALLGRAY'  # Can be 0, 1, 2, or "ALL"
 spatial_size = (16, 16)  # Spatial binning dimensions
 hist_bins = 16  # Number of histogram bins
 spatial_feat = True  # Spatial features on or off
@@ -151,14 +151,14 @@ else:
 
 # TODO: Receive Frame
 def process_image(image):
-    ystart = 400
-    ystop = 656
-    scale = 1.5
-    heatmap_threshold = 3
+    # Variable window scale sizes
+    ystart = (240, 320, 380, 370)
+    ystop = (656, 656, 600, 500)
+    scale = (3.75, 2.5, 1.1, .75)
+    heatmap_threshold = 2
     heat = np.zeros_like(image[:, :, 0]).astype(np.float)
 
     # Find Vehicles
-    # TODO: Variable window sizes
     out_img, bboxes = find_cars(image, ystart, ystop, scale, svc, X_scaler,
                                 orient, pix_per_cell, cell_per_block,
                                 spatial_size, hist_bins)
