@@ -80,9 +80,7 @@ def bin_spatial(img, size=(32, 32)):
     color1 = cv2.resize(img[:, :, 0], size).ravel()
     color2 = cv2.resize(img[:, :, 1], size).ravel()
     color3 = cv2.resize(img[:, :, 2], size).ravel()
-    gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
-    gray = cv2.resize(gray, size).ravel()
-    return np.hstack((color1, color2, color3, gray))
+    return np.hstack((color1, color2, color3))
 
 
 def color_hist(img, nbins=32, bins_range=(0, 256)):
@@ -90,11 +88,8 @@ def color_hist(img, nbins=32, bins_range=(0, 256)):
     channel1_hist = np.histogram(img[:, :, 0], bins=nbins, range=bins_range)
     channel2_hist = np.histogram(img[:, :, 1], bins=nbins, range=bins_range)
     channel3_hist = np.histogram(img[:, :, 2], bins=nbins, range=bins_range)
-    gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
-    gray_hist = np.histogram(gray, bins=nbins, range=bins_range)
     # Concatenate the histograms into a single feature vector
-    hist_features = np.concatenate(
-        (channel1_hist[0], channel2_hist[0], channel3_hist[0], gray_hist[0]))
+    hist_features = np.concatenate((channel1_hist[0], channel2_hist[0], channel3_hist[0]))
     # Return the individual histograms, bin_centers and feature vector
     return hist_features
 
@@ -272,7 +267,6 @@ def find_cars(img, ystart, ystop, scale, svc, X_scaler, orient, pix_per_cell,
         ch1 = ctrans_tosearch[:, :, 0]
         ch2 = ctrans_tosearch[:, :, 1]
         ch3 = ctrans_tosearch[:, :, 2]
-        gray = cv2.cvtColor(cv2.cvtColor(ctrans_tosearch, cv2.COLOR_HLS2RGB), cv2.COLOR_RGB2GRAY)
 
         # Define blocks and steps as above
         nxblocks = (ch1.shape[1] // pix_per_cell) - cell_per_block + 1
@@ -300,8 +294,6 @@ def find_cars(img, ystart, ystop, scale, svc, X_scaler, orient, pix_per_cell,
                                 feature_vec=False)
         hog3 = get_hog_features(ch3, orient, pix_per_cell, cell_per_block,
                                 feature_vec=False)
-        hog4 = get_hog_features(gray, orient, pix_per_cell, cell_per_block,
-                                feature_vec=False)
 
         for xb in range(nxsteps):
             for yb in range(nysteps):
@@ -314,10 +306,7 @@ def find_cars(img, ystart, ystop, scale, svc, X_scaler, orient, pix_per_cell,
                             xpos:xpos + nblocks_per_window].ravel()
                 hog_feat3 = hog3[ypos:ypos + nblocks_per_window,
                             xpos:xpos + nblocks_per_window].ravel()
-                hog_feat4 = hog4[ypos:ypos + nblocks_per_window,
-                            xpos:xpos + nblocks_per_window].ravel()
-                hog_features = np.hstack((hog_feat1, hog_feat2, hog_feat3,
-                                          hog_feat4))
+                hog_features = np.hstack((hog_feat1, hog_feat2, hog_feat3))
 
 
                 xleft = xpos * pix_per_cell
