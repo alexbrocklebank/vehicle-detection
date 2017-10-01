@@ -2,11 +2,8 @@ import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
 import numpy as np
 import pickle
-import cv2
 import time
 from collections import deque
-from skimage.feature import hog
-from sklearn import datasets
 from sklearn.externals import joblib
 from sklearn.svm import LinearSVC
 from sklearn.preprocessing import StandardScaler
