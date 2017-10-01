@@ -4,6 +4,7 @@ import numpy as np
 import pickle
 import cv2
 import time
+from collections import deque
 from skimage.feature import hog
 from sklearn import datasets
 from sklearn.externals import joblib
@@ -38,7 +39,7 @@ hist_bins = 16  # Number of histogram bins
 spatial_feat = True  # Spatial features on or off
 hist_feat = True  # Histogram features on or off
 hog_feat = True  # HOG features on or off
-y_start_stop = [450, None]  # Min and max in y to search in slide_window()
+y_start_stop = [240, None]  # Min and max in y to search in slide_window()
 write_params = False
 
 # Attempt to load previously stored parameters
