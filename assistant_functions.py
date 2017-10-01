@@ -254,7 +254,7 @@ def find_cars(img, ystart, ystop, scale, svc, X_scaler, orient, pix_per_cell,
 
     for i in range(0, len(ystart)):
         img_tosearch = img[ystart[i]:ystop[i], :, :]
-        ctrans_tosearch = convert_color(img_tosearch, conv='RGB2HLS')
+        ctrans_tosearch = convert_color(img_tosearch, conv='RGB2YCrCb')
         # TODO: Test the color conversion above
         if scale[i] != 1:
             imshape = ctrans_tosearch.shape
@@ -338,15 +338,14 @@ def find_cars(img, ystart, ystop, scale, svc, X_scaler, orient, pix_per_cell,
 
 
 def add_heat(heatmap, bbox_list):
+    #set minimum pixel width of bounding boxes that could contain cars.
+    m = 15
     # Iterate through list of bboxes
     for box in bbox_list:
         # Add += 1 for all pixels inside each bbox
         # Assuming each "box" takes the form ((x1, y1), (x2, y2))
-        heatmap[box[0][1]:box[1][1], box[0][0]:box[1][0]] += 1
-    for box in bbox_list:
-        # Add += 1 for all pixels inside each bbox
-        # Assuming each "box" takes the form ((x1, y1), (x2, y2))
-        heatmap[box[0][1]:box[1][1], box[0][0]:box[1][0]] = max(heatmap[box[0][1]:box[1][1], box[0][0]:box[1][0]])
+        if abs(box[0][1] - box[1][1]) > m and abs(box[0][0] - box[1][0]) > m:
+            heatmap[box[0][1]:box[1][1], box[0][0]:box[1][0]] += 1
     # Return updated heatmap
     return heatmap  # Iterate through list of bboxes
 
@@ -355,6 +354,12 @@ def apply_threshold(heatmap, threshold):
     # Zero out pixels below the threshold
     heatmap[heatmap <= threshold] = 0
     # Return thresholded map
+    return heatmap
+
+
+def equalize(heatmap, bbox_list):
+    for box in bbox_list:
+        heatmap[box[0][1]:box[1][1], box[0][0]:box[1][0]] = np.amax(heatmap[box[0][1]:box[1][1], box[0][0]:box[1][0]])
     return heatmap
 
 

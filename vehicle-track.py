@@ -32,17 +32,17 @@ output_video = 'output_video' + os.sep + 'output.mp4'
 
 # Classifier Parameters
 classifier_pickle = 'classifier.pkl'
-color_space = 'HLS'  # Can be RGB, HSV, LUV, HLS, YUV, YCrCb
-orient = 9  # HOG orientations
+color_space = 'YCrCb'  # Can be RGB, HSV, LUV, HLS, YUV, YCrCb
+orient = 16  # HOG orientations
 pix_per_cell = 8  # HOG pixels per cell
 cell_per_block = 2  # HOG cells per block
 hog_channel = 'ALL'  # Can be 0, 1, 2, or "ALL"
-spatial_size = (16, 16)  # Spatial binning dimensions
-hist_bins = 16  # Number of histogram bins
+spatial_size = (32, 32)  # Spatial binning dimensions
+hist_bins = 32  # Number of histogram bins
 spatial_feat = True  # Spatial features on or off
 hist_feat = True  # Histogram features on or off
 hog_feat = True  # HOG features on or off
-y_start_stop = [240, None]  # Min and max in y to search in slide_window()
+y_start_stop = [240, 700]  # Min and max in y to search in slide_window()
 write_params = False
 
 # Attempt to load previously stored parameters
@@ -157,9 +157,9 @@ else:
 def process_image(image):
     # Variable window scale sizes
     ystart = (240, 320, 380, 370)
-    ystop = (656, 656, 600, 500)
-    scale = (3.75, 2.5, 1.1, .75)
-    heatmap_threshold = 2
+    ystop = (656, 620, 580, 475)
+    scale = (3.75, 2.5, 1.7, 1)
+    heatmap_threshold = 14
     heat = np.zeros_like(image[:, :, 0]).astype(np.float)
 
     # Find Vehicles
@@ -169,12 +169,13 @@ def process_image(image):
 
     # Heatmap
     heat = apply_threshold(add_heat(heat, bboxes), heatmap_threshold)
+    #heat = equalize(heat, bboxes)
     heatmap = np.clip(heat, 0, 255)
     labels = label(heatmap)
     # TODO: Centroid of Duplicates
     draw_img = draw_labeled_bboxes(np.copy(out_img), labels)
     # TODO: Record positions of found vehicles
-    if False:
+    if True:
         fig = plt.figure()
         plt.subplot(121)
         plt.imshow(draw_img)
@@ -195,7 +196,7 @@ if True:
 
 
 # Test Video:
-if True:
+if False:
     clip = VideoFileClip(input_video)
     out_clip = clip.fl_image(process_image)
     out_clip.write_videofile(output_video, audio=False)
