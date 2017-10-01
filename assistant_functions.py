@@ -6,6 +6,8 @@ import glob
 import os
 import pickle
 import cv2
+import PIL
+from PIL import Image
 from skimage.feature import hog
 from scipy.ndimage.measurements import label
 
@@ -344,7 +346,7 @@ def add_heat(heatmap, bbox_list):
     for box in bbox_list:
         # Add += 1 for all pixels inside each bbox
         # Assuming each "box" takes the form ((x1, y1), (x2, y2))
-        if abs(box[0][1] - box[1][1]) > m and abs(box[0][0] - box[1][0]) > m:
+        if (abs(box[0][1] - box[1][1]) > m) and (abs(box[0][0] - box[1][0]) > m):
             heatmap[box[0][1]:box[1][1], box[0][0]:box[1][0]] += 1
     # Return updated heatmap
     return heatmap  # Iterate through list of bboxes
@@ -361,6 +363,17 @@ def equalize(heatmap, bbox_list):
     for box in bbox_list:
         heatmap[box[0][1]:box[1][1], box[0][0]:box[1][0]] = np.amax(heatmap[box[0][1]:box[1][1], box[0][0]:box[1][0]])
     return heatmap
+
+
+def average_heatmap(heatmaps):
+    n = len(heatmaps)
+    average = np.zeros(heatmaps[0].shape, np.float)
+
+    for map in heatmaps:
+        average = average + map / n
+
+    average = np.array(np.round(average), dtype=np.uint8)
+    return average
 
 
 # Define a function to draw bounding boxes

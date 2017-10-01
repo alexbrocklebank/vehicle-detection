@@ -29,6 +29,9 @@ test_images = ('test_images' + os.sep + 'test1.jpg',
                'test_images' + os.sep + 'test6.jpg')
 input_video = 'test_video.mp4'
 output_video = 'output_video' + os.sep + 'output.mp4'
+history_length = 10  # Number of frames to store
+heatmaps = deque(maxlen=history_length)
+global heatmaps
 
 # Classifier Parameters
 classifier_pickle = 'classifier.pkl'
@@ -170,7 +173,8 @@ def process_image(image):
     # Heatmap
     heat = apply_threshold(add_heat(heat, bboxes), heatmap_threshold)
     #heat = equalize(heat, bboxes)
-    heatmap = np.clip(heat, 0, 255)
+    heatmaps.append(np.clip(heat, 0, 255))
+    heatmap = average_heatmap(heatmaps)
     labels = label(heatmap)
     # TODO: Centroid of Duplicates
     draw_img = draw_labeled_bboxes(np.copy(out_img), labels)
