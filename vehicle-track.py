@@ -27,11 +27,11 @@ test_images = ('test_images' + os.sep + 'test1.jpg',
                'test_images' + os.sep + 'test4.jpg',
                'test_images' + os.sep + 'test5.jpg',
                'test_images' + os.sep + 'test6.jpg')
-input_video = 'test_video.mp4'
+input_video = 'project_video.mp4'
 output_video = 'output_video' + os.sep + 'output.mp4'
 history_length = 10  # Number of frames to store
-heatmaps = deque(maxlen=history_length)
 global heatmaps
+heatmaps = deque(maxlen=history_length)
 
 # Classifier Parameters
 classifier_pickle = 'classifier.pkl'
@@ -179,7 +179,7 @@ def process_image(image):
     # TODO: Centroid of Duplicates
     draw_img = draw_labeled_bboxes(np.copy(out_img), labels)
     # TODO: Record positions of found vehicles
-    if True:
+    if False:
         fig = plt.figure()
         plt.subplot(121)
         plt.imshow(draw_img)
@@ -193,14 +193,14 @@ def process_image(image):
 
 
 # Test Images:
-if True:
+if False:
     for img in test_images:
         image = mpimg.imread(img)
         out_img = process_image(image)
 
 
 # Test Video:
-if False:
+if True:
     clip = VideoFileClip(input_video)
     out_clip = clip.fl_image(process_image)
     out_clip.write_videofile(output_video, audio=False)
