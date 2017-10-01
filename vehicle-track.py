@@ -16,6 +16,7 @@ from sklearn.preprocessing import StandardScaler
 # if you are using scikit-learn >= 0.18 then use this:
 from sklearn.model_selection import train_test_split
 from scipy.ndimage.measurements import label
+from moviepy.editor import VideoFileClip
 from assistant_functions import *
 
 # Read in Vehicle and Not-Vehicle images
@@ -26,6 +27,8 @@ test_images = ('test_images' + os.sep + 'test1.jpg',
                'test_images' + os.sep + 'test4.jpg',
                'test_images' + os.sep + 'test5.jpg',
                'test_images' + os.sep + 'test6.jpg')
+input_video = 'test_video.mp4'
+output_video = 'output_video' + os.sep + 'output.mp4'
 
 # Classifier Parameters
 classifier_pickle = 'classifier.pkl'
@@ -171,18 +174,28 @@ def process_image(image):
     # TODO: Centroid of Duplicates
     draw_img = draw_labeled_bboxes(np.copy(out_img), labels)
     # TODO: Record positions of found vehicles
-    fig = plt.figure()
-    plt.subplot(121)
-    plt.imshow(draw_img)
-    plt.title('Car Positions')
-    plt.subplot(122)
-    plt.imshow(heatmap, cmap='hot')
-    plt.title('Heat Map')
-    fig.tight_layout()
-    plt.show()
+    if False:
+        fig = plt.figure()
+        plt.subplot(121)
+        plt.imshow(draw_img)
+        plt.title('Car Positions')
+        plt.subplot(122)
+        plt.imshow(heatmap, cmap='hot')
+        plt.title('Heat Map')
+        fig.tight_layout()
+        plt.show()
     return draw_img
 
 
-for img in test_images:
-    image = mpimg.imread(img)
-    out_img = process_image(image)
+# Test Images:
+if True:
+    for img in test_images:
+        image = mpimg.imread(img)
+        out_img = process_image(image)
+
+
+# Test Video:
+if True:
+    clip = VideoFileClip(input_video)
+    out_clip = clip.fl_image(process_image)
+    out_clip.write_videofile(output_video, audio=False)
