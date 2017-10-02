@@ -7,17 +7,20 @@ from collections import deque
 from sklearn.externals import joblib
 from sklearn.svm import LinearSVC
 from sklearn.preprocessing import StandardScaler
-# NOTE: the next import is only valid
 # for scikit-learn version <= 0.17
 # from sklearn.cross_validation import train_test_split
-# if you are using scikit-learn >= 0.18 then use this:
+# for scikit-learn >= 0.18
 from sklearn.model_selection import train_test_split
 from scipy.ndimage.measurements import label
 from moviepy.editor import VideoFileClip
 from assistant_functions import *
 
+
+# VARIABLES
 # Read in Vehicle and Not-Vehicle images
 cars, notcars = load_data()
+
+# Input/Output Images and Video files
 test_images = ('test_images' + os.sep + 'test1.jpg',
                'test_images' + os.sep + 'test2.jpg',
                'test_images' + os.sep + 'test3.jpg',
@@ -25,7 +28,10 @@ test_images = ('test_images' + os.sep + 'test1.jpg',
                'test_images' + os.sep + 'test5.jpg',
                'test_images' + os.sep + 'test6.jpg')
 input_video = 'project_video.mp4'
+# input_video = 'test_video.mp4'
 output_video = 'output_video' + os.sep + 'output.mp4'
+
+# History Deque and length of cached heatmaps
 history_length = 10  # Number of frames to store
 global heatmaps
 heatmaps = deque(maxlen=history_length)
@@ -45,6 +51,7 @@ hog_feat = True  # HOG features on or off
 y_start_stop = [240, 700]  # Min and max in y to search in slide_window()
 write_params = False
 
+
 # Attempt to load previously stored parameters
 parameters = {}
 try:
@@ -53,7 +60,7 @@ try:
 except (OSError, IOError) as e:
     write_params = True
 
-# Store parameters in dictionary
+# Check to see if any parameters have changed since last save
 param_names = ('classifier_pickle', 'color_space', 'orient', 'pix_per_cell',
                'cell_per_block', 'hog_channel', 'spatial_size', 'hist_bins',
                'spatial_feat', 'hist_feat', 'hog_feat', 'y_start_stop')
@@ -63,16 +70,17 @@ for i in param_names:
             write_params = True
     parameters[i] = locals()[i]
 
-# Store dictionary of parameters to pickle
+# Store dictionary of parameters to pickle if they have changed or don't exist
 if write_params:
     with open('parameters.pkl', 'wb') as f:
         pickle.dump(parameters, f)
         print("Parameters written to file.")
 
-# Obtain Features
+# Load Car Features
 if (not write_params) and im_a_pickle_morty("car_features.pkl"):
     car_features = joblib.load("car_features.pkl")
     print("Car Features loaded from file.")
+# Extract and Save Car Features
 else:
     car_features = extract_features(cars, color_space=color_space,
                                     spatial_size=spatial_size,
@@ -85,9 +93,11 @@ else:
     joblib.dump(car_features, "car_features.pkl")
     print("Car Features written to file.")
 
+# Load Notcar Features
 if (not write_params) and im_a_pickle_morty("notcar_features.pkl"):
     notcar_features = joblib.load("notcar_features.pkl")
     print("Notcar Features loaded from file.")
+# Extract and Save Notcar Features
 else:
     notcar_features = extract_features(notcars, color_space=color_space,
                                        spatial_size=spatial_size,
@@ -100,9 +110,10 @@ else:
     joblib.dump(notcar_features, "notcar_features.pkl")
     print("Notcar Features written to file.")
 
-# Normalize/Scale Features
+# Variables to store Scaled X features and y labels
 scaled_X = []
 y = []
+# If no changes to parameters are detected, load saved Features and Labels
 if not write_params:
     if im_a_pickle_morty("X_scaled.pkl"):
         scaled_X = joblib.load("X_scaled.pkl")
@@ -112,6 +123,7 @@ if not write_params:
     if im_a_pickle_morty("y_labels.pkl"):
         y = joblib.load("y_labels.pkl")
         print("Y Labels loaded from file.")
+# Normalize/Scale Features & Save
 if (len(scaled_X) == 0) or (len(y) == 0):
     X = np.vstack((car_features, notcar_features)).astype(np.float64)
     # Fit a per-column scaler
@@ -134,10 +146,11 @@ X_train, X_test, y_train, y_test = train_test_split(
 # Create Classifier
 svc = LinearSVC()
 
-# Train Clasifier if it hasn't already been stored & parameters are unchanged
+# If parameters are unchanged and a previous classifier is saved
 if (not write_params) and im_a_pickle_morty(classifier_pickle):
     svc = joblib.load(classifier_pickle)
     print("Classifier loaded...")
+# Train Classifier if it hasn't already been stored or parameters are changed
 else:
     # Check the training time for the SVC
     t = time.time()
@@ -153,7 +166,7 @@ else:
     print("Classifier saved.")
 
 
-# TODO: Receive Frame
+# Image Processing Pipeline
 def process_image(image):
     # Variable window scale sizes
     ystart = (240, 320, 380, 370)
@@ -173,9 +186,9 @@ def process_image(image):
     heatmaps.append(np.clip(heat, 0, 255))
     heatmap = average_heatmap(heatmaps)
     labels = label(heatmap)
-    # TODO: Centroid of Duplicates
+    # Draw labeled boxes
     draw_img = draw_labeled_bboxes(np.copy(out_img), labels)
-    # TODO: Record positions of found vehicles
+    # Display Drawn Image/Heatmap output
     if False:
         fig = plt.figure()
         plt.subplot(121)
